@@ -1,0 +1,35 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Validate Compose') {
+            steps {
+                sh 'podman compose -f /var/lib/jenkins/workspace/LLM-Pipeline/compose.yaml config'
+            }
+        }
+
+        stage('Pull Images') {
+            steps {
+                sh 'podman compose -f /var/lib/jenkins/workspace/LLM-Pipeline/compose.yaml pull'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh 'podman compose -f /var/lib/jenkins/workspace/LLM-Pipeline/compose.yaml up -d'
+            }
+        }
+
+        stage('Wait for proper start') {
+            steps {
+                sleep 10
+            }
+        }
+
+        stage('Health Check') {
+            steps {
+                sh 'curl http://localhost:3000'
+            }
+        }
+    }
+}
