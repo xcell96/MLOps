@@ -1,0 +1,6 @@
+- name: Install Vulkan + GPU tools
+  dnf:
+    name:
+      - vulkan-tools
+      - mesa-vulkan-drivers
+    state: present

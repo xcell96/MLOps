@@ -1,0 +1,42 @@
+services:
+  llm_server:
+    container_name: llm_server
+    image: "ghcr.io/ggml-org/llama.cpp:server-vulkan"
+    entrypoint:
+      [
+        "/app/llama-server",
+        "-c",
+        "0",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8083",
+        "-hf",
+        "gguf-org/gemma-3-1b-it-gguf:Q4_K_S"
+      ]
+    devices:
+      #- /dev/kfd
+      - /dev/dri
+    security_opt:
+      - seccomp=unconfined
+    ports:
+      - "8083:8083"
+    networks:
+      - intranet
+    restart: unless-stopped
+
+  open_webui:
+    image: ghcr.io/open-webui/open-webui:main
+    ports:
+      - "3000:8080"
+    volumes:
+      - open-webui:/app/backend/data
+    networks:
+      - intranet
+    restart: unless-stopped
+
+volumes:
+  open-webui:
+
+networks:
+  intranet:

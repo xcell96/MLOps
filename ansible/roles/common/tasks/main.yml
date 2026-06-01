@@ -1,0 +1,14 @@
+- name: Update system
+  dnf:
+    name: "*"
+    state: latest
+
+- name: Install base tools
+  dnf:
+    name:
+      - git
+      - curl
+      - vim
+      - python3
+      - epel-release
+    state: present

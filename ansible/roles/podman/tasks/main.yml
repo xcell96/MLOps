@@ -1,0 +1,10 @@
+- name: Install podman stack
+  dnf:
+    name:
+      - podman
+      - podman-docker
+      - podman-compose
+    state: present
+
+- name: Enable lingering for rootless containers
+  command: loginctl enable-linger root

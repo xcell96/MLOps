@@ -1,0 +1,7 @@
+- hosts: llm
+  become: true
+  roles:
+    - common
+    - podman
+    - gpu
+    - llm_stack
