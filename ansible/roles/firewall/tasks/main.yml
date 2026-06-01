@@ -1,0 +1,12 @@
+- name: Install firewalld
+  dnf:
+    name:
+      - firewalld
+      - python3-firewall
+    state: present
+
+- name: Enable firewalld
+  systemd:
+    name: firewalld
+    enabled: true
+    state: started

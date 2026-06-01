@@ -1,0 +1,49 @@
+- name: Create deployment directory
+  file:
+    path: /opt/llm
+    state: directory
+
+- name: Copy compose file
+  copy:
+    src: "{{ playbook_dir }}/../compose/compose.yaml"
+    dest: /opt/llm/compose.yaml
+
+- name: Install Java
+  dnf:
+    name:
+      - java-21-openjdk
+    state: present
+
+- name: Add Jenkins repository
+  get_url:
+    url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
+    dest: /etc/yum.repos.d/jenkins.repo
+
+- name: Import Jenkins key
+  rpm_key:
+    key: https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+    state: present
+
+- name: Install Jenkins
+  dnf:
+    name: jenkins
+    state: present
+
+- name: Enable Jenkins
+  systemd:
+    name: jenkins
+    enabled: true
+    state: started
+
+- name: Open Jenkins port
+  firewalld:
+    port: 8080/tcp
+    permanent: true
+    immediate: true
+    state: enabled
+
+- name: Add Jenkins to wheel
+  user:
+    name: jenkins
+    groups: wheel
+    append: true
