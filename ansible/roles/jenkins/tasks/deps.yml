@@ -1,0 +1,10 @@
+- name: Install Java
+  dnf:
+    name:
+      - java-21-openjdk
+    state: present
+
+- name: Install python-jenkins dependency
+  pip:
+    name: python-jenkins
+    executable: pip3

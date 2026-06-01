@@ -4,19 +4,19 @@ pipeline {
     stages {
         stage('Validate Compose') {
             steps {
-                sh 'podman compose -f /var/lib/jenkins/workspace/LLM-Pipeline/compose.yaml config'
+                sh 'sudo podman compose -f /opt/llm/compose.yaml config'
             }
         }
 
         stage('Pull Images') {
             steps {
-                sh 'podman compose -f /var/lib/jenkins/workspace/LLM-Pipeline/compose.yaml pull'
+                sh 'sudo podman compose -f /opt/llm/compose.yaml pull'
             }
         }
 
         stage('Deploy') {
             steps {
-                sh 'podman compose -f /var/lib/jenkins/workspace/LLM-Pipeline/compose.yaml up -d'
+                sh 'sudo podman compose -f /opt/llm/compose.yaml up -d'
             }
         }
 

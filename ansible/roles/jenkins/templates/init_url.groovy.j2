@@ -1,0 +1,12 @@
+// 03_init_url.groovy
+// Sets the Jenkins URL required for CLI access.
+// Managed by Ansible — do not edit manually.
+
+import jenkins.model.*
+
+def instance = Jenkins.getInstanceOrNull()
+if (instance == null) return
+
+def jlc = JenkinsLocationConfiguration.get()
+jlc.setUrl("http://localhost:{{ jenkins_http_port }}/")
+jlc.save()

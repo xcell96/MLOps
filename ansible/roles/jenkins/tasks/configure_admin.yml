@@ -1,0 +1,59 @@
+# Jenkins reads any *.groovy file in $JENKINS_HOME/init.groovy.d/ on startup.
+# We use this to create the admin user and lock down security before the
+# UI is ever reachable, avoiding the first-run wizard entirely.
+
+- name: Create init.groovy.d directory
+  file:
+    path: "{{ jenkins_home }}/init.groovy.d"
+    state: directory
+    owner: jenkins
+    group: jenkins
+    mode: "0755"
+
+- name: Deploy admin user init script
+  template:
+    src: init_admin.groovy.j2
+    dest: "{{ jenkins_home }}/init.groovy.d/01_init_admin.groovy"
+    owner: jenkins
+    group: jenkins
+    mode: "0640"
+  notify: Restart Jenkins
+
+- name: Deploy security realm init script
+  template:
+    src: init_security.groovy.j2
+    dest: "{{ jenkins_home }}/init.groovy.d/02_init_security.groovy"
+    owner: jenkins
+    group: jenkins
+    mode: "0640"
+  notify: Restart Jenkins
+
+- name: Deploy Jenkins URL init script
+  ansible.builtin.template:
+    src: init_url.groovy.j2
+    dest: "{{ jenkins_home }}/init.groovy.d/03_init_url.groovy"
+    owner: jenkins
+    group: jenkins
+    mode: "0640"
+  notify: Restart Jenkins
+
+# Force the restart now so Jenkins picks up the init scripts
+# before we try to use the CLI/API in later tasks.
+- name: Flush handlers to apply admin config immediately
+  meta: flush_handlers
+
+- name: Wait for Jenkins to be fully up after restart
+  wait_for:
+    port: "{{ jenkins_http_port }}"
+    host: localhost
+    delay: 15
+    timeout: 120
+
+- name: Wait for Jenkins HTTP 200 (login page reachable)
+  uri:
+    url: "http://localhost:{{ jenkins_http_port }}/login"
+    status_code: 200
+  register: jenkins_login_check
+  retries: 15
+  delay: 10
+  until: jenkins_login_check.status == 200

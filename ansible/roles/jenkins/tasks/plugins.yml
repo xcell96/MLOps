@@ -1,0 +1,46 @@
+# Download jenkins-cli.jar from the running instance, then use it to install plugins.
+# This is more reliable than direct file placement because the CLI resolves
+# plugin dependencies automatically.
+
+- name: Download jenkins-cli.jar
+  get_url:
+    url: "http://localhost:{{ jenkins_http_port }}/jnlpJars/jenkins-cli.jar"
+    dest: /tmp/jenkins-cli.jar
+    mode: "0644"
+  retries: 5
+  delay: 10
+
+- name: Install Jenkins plugins via CLI
+  ansible.builtin.command:
+    cmd: >
+      java -jar /tmp/jenkins-cli.jar
+      -s http://localhost:{{ jenkins_http_port }}/
+      -auth {{ jenkins_admin_username }}:{{ jenkins_admin_password }}
+      install-plugin {{ item }} -deploy
+  loop: "{{ jenkins_plugins }}"
+  register: plugin_install
+  changed_when: "'already installed' not in plugin_install.stdout"
+  failed_when:
+    - plugin_install.rc != 0
+    - "'already installed' not in plugin_install.stdout"
+
+- name: Restart Jenkins to activate newly installed plugins
+  systemd:
+    name: jenkins
+    state: restarted
+
+- name: Wait for Jenkins to come back after plugin restart
+  wait_for:
+    port: "{{ jenkins_http_port }}"
+    host: localhost
+    delay: 15
+    timeout: 180
+
+- name: Confirm Jenkins login page is back up
+  uri:
+    url: "http://localhost:{{ jenkins_http_port }}/login"
+    status_code: 200
+  register: jenkins_up
+  retries: 18
+  delay: 10
+  until: jenkins_up.status == 200

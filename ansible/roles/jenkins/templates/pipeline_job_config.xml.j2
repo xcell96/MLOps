@@ -1,0 +1,43 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<!--
+  Pipeline job configuration — managed by Ansible.
+  Rendered from roles/jenkins/templates/pipeline_job_config.xml.j2
+-->
+<flow-definition plugin="workflow-job">
+  <description>{{ pipeline_job_description }}</description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <definition class="{% if pipeline_scm_type == 'git' %}org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition{% else %}org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition{% endif %}"
+              plugin="workflow-cps">
+{% if pipeline_scm_type == 'git' %}
+    <!-- Pull Jenkinsfile from Git repository -->
+    <scm class="hudson.plugins.git.GitSCM" plugin="git">
+      <configVersion>2</configVersion>
+      <userRemoteConfigs>
+        <hudson.plugins.git.UserRemoteConfig>
+          <url>{{ pipeline_git_url }}</url>
+{% if pipeline_git_credentials_id %}
+          <credentialsId>{{ pipeline_git_credentials_id }}</credentialsId>
+{% endif %}
+        </hudson.plugins.git.UserRemoteConfig>
+      </userRemoteConfigs>
+      <branches>
+        <hudson.plugins.git.BranchSpec>
+          <name>{{ pipeline_git_branch }}</name>
+        </hudson.plugins.git.BranchSpec>
+      </branches>
+      <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+      <submoduleCfg class="empty-list"/>
+      <extensions/>
+    </scm>
+    <scriptPath>Jenkinsfile</scriptPath>
+    <lightweight>true</lightweight>
+{% else %}
+    <!-- Inline Jenkinsfile (pipeline_scm_type = "inline") -->
+    <script>{{ pipeline_inline_script | default('pipeline {\n    agent any\n    stages {\n        stage(\'Hello\') {\n            steps {\n                echo \'Hello from your Ansible-provisioned Jenkins!\'\n            }\n        }\n    }\n}') }}</script>
+    <sandbox>true</sandbox>
+{% endif %}
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

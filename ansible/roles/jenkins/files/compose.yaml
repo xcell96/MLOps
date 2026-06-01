@@ -26,9 +26,13 @@ services:
     restart: unless-stopped
 
   open_webui:
+    container_name: open_webui
     image: ghcr.io/open-webui/open-webui:main
     ports:
       - "3000:8080"
+    environment:
+      - OPENAI_API_BASE_URL=http://llm_server:8083/v1
+      - OPENAI_API_KEY=sk-no-key-required
     volumes:
       - open-webui:/app/backend/data
     networks:

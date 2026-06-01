@@ -1,0 +1,82 @@
+- name: Add Jenkins stable YUM repository
+  get_url:
+    url: "{{ jenkins_repo_url }}"
+    dest: /etc/yum.repos.d/jenkins.repo
+    mode: "0644"
+
+- name: Import Jenkins GPG key
+  rpm_key:
+    key: "{{ jenkins_repo_key_url }}"
+    state: present
+
+- name: Install Jenkins package
+  dnf:
+    name: "{{ jenkins_package }}"
+    state: present
+  notify: Restart Jenkins
+
+- name: Add jenkins user to wheel group
+  ansible.builtin.user:
+    name: jenkins
+    groups: wheel
+    append: true
+
+- name: Grant jenkins passwordless sudo
+  ansible.builtin.copy:
+    dest: /etc/sudoers.d/jenkins
+    content: "jenkins ALL=(ALL) NOPASSWD: ALL\n"
+    mode: "0440"
+    validate: "visudo -cf %s"
+
+- name: Create deployment directory
+  file:
+    path: /opt/llm
+    state: directory
+    owner: jenkins
+    group: jenkins
+
+- name: Copy compose file
+  copy:
+    src: compose.yaml
+    dest: /opt/llm/compose.yaml
+    owner: jenkins
+    group: jenkins
+
+- name: Configure JAVA_OPTS for Jenkins (disable setup wizard)
+  lineinfile:
+    path: /etc/sysconfig/jenkins
+    regexp: '^JENKINS_JAVA_OPTIONS='
+    line: 'JENKINS_JAVA_OPTIONS="{{ jenkins_java_opts }}"'
+    create: true
+    mode: "0644"
+  notify: Restart Jenkins
+
+- name: Set Jenkins HTTP port in sysconfig
+  lineinfile:
+    path: /etc/sysconfig/jenkins
+    regexp: '^JENKINS_PORT='
+    line: 'JENKINS_PORT="{{ jenkins_http_port }}"'
+    create: true
+    mode: "0644"
+  notify: Restart Jenkins
+
+- name: Open Jenkins port in firewalld
+  firewalld:
+    port: "{{ jenkins_http_port }}/tcp"
+    permanent: true
+    state: enabled
+    immediate: true
+  ignore_errors: true   # firewalld may not be running in all environments
+
+- name: Enable and start Jenkins service
+  systemd:
+    name: jenkins
+    enabled: true
+    state: started
+
+- name: Wait for Jenkins to become available on port {{ jenkins_http_port }}
+  wait_for:
+    port: "{{ jenkins_http_port }}"
+    host: localhost
+    delay: 10
+    timeout: 120

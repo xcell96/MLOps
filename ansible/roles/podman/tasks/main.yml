@@ -8,3 +8,9 @@
 
 - name: Enable lingering for rootless containers
   command: loginctl enable-linger root
+
+- name: Enable podman socket
+  systemd:
+    name: podman.socket
+    enabled: true
+    state: started

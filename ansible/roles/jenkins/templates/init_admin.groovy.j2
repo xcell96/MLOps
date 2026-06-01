@@ -1,0 +1,22 @@
+// 01_init_admin.groovy
+// Runs once on Jenkins startup. Creates the admin user if it doesn't exist.
+// Managed by Ansible — do not edit manually.
+
+import jenkins.model.*
+import hudson.security.*
+
+def instance = Jenkins.getInstanceOrNull()
+if (instance == null) return
+
+def hudsonRealm = new HudsonPrivateSecurityRealm(false)
+
+// Only create the user if it doesn't already exist
+if (hudsonRealm.getAllUsers().find { it.getId() == "{{ jenkins_admin_username }}" } == null) {
+    hudsonRealm.createAccount(
+        "{{ jenkins_admin_username }}",
+        "{{ jenkins_admin_password }}"
+    )
+}
+
+instance.setSecurityRealm(hudsonRealm)
+instance.save()

@@ -1,0 +1,35 @@
+# Jenkins version and source
+jenkins_repo_url: "https://pkg.jenkins.io/redhat-stable/jenkins.repo"
+jenkins_repo_key_url: "https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key"
+jenkins_package: jenkins
+
+# Admin credentials — override these in group_vars/all.yml or via ansible-vault
+jenkins_admin_username: llm_admin
+jenkins_admin_password: "password"
+jenkins_admin_fullname: "Jenkins Admin"
+jenkins_admin_email: "admin@example.com"
+
+# Jenkins runtime settings
+jenkins_http_port: 8080
+jenkins_home: /var/lib/jenkins
+jenkins_java_opts: "-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false"
+
+# Pipeline job settings
+pipeline_job_name: "llm-pipeline"
+pipeline_job_description: "Pipeline loaded from Jenkinsfile in SCM"
+
+# SCM settings for the pipeline job
+# Set pipeline_scm_type to "git" to use a remote Jenkinsfile, or "inline" to embed it
+pipeline_scm_type: "inline"
+pipeline_jenkinsfile_path: "/home/xcell/Code/Projects/MLOps/release_v2/ansible/roles/jenkins/files/Jenkinsfile"      # path to your local Jenkinsfile, set in group_vars
+
+# Plugins to install (minimal set for a pipeline-ready Jenkins)
+jenkins_plugins:
+  - git
+  - workflow-aggregator       # Pipeline suite
+  - pipeline-stage-view
+  - credentials-binding
+  - antisamy-markup-formatter # Safer HTML rendering
+  - configuration-as-code     # optional but useful
+  - timestamper
+  - ws-cleanup

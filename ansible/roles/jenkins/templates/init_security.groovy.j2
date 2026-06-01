@@ -1,0 +1,14 @@
+// 02_init_security.groovy
+// Applies Matrix-based security so only the admin user has access.
+// Managed by Ansible — do not edit manually.
+
+import jenkins.model.*
+import hudson.security.*
+
+def instance = Jenkins.getInstanceOrNull()
+if (instance == null) return
+
+def strategy = new FullControlOnceLoggedInAuthorizationStrategy()
+strategy.setAllowAnonymousRead(false)
+instance.setAuthorizationStrategy(strategy)
+instance.save()

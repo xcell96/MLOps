@@ -1,0 +1,46 @@
+- name: Read local Jenkinsfile content
+  set_fact:
+    pipeline_inline_script: "{{ lookup('file', pipeline_jenkinsfile_path) }}"
+  when: pipeline_scm_type == 'inline'
+
+- name: Render pipeline job config XML
+  template:
+    src: pipeline_job_config.xml.j2
+    dest: /tmp/{{ pipeline_job_name }}-config.xml
+    mode: "0644"
+
+- name: Check if pipeline job already exists
+  command:
+    cmd: >
+      java -jar /tmp/jenkins-cli.jar
+      -s http://localhost:{{ jenkins_http_port }}/
+      -auth {{ jenkins_admin_username }}:{{ jenkins_admin_password }}
+      get-job "{{ pipeline_job_name }}"
+  register: job_exists
+  failed_when: false
+  changed_when: false
+
+- name: Read rendered job config XML from remote
+  slurp:
+    src: /tmp/{{ pipeline_job_name }}-config.xml
+  register: job_config_xml
+
+- name: Create pipeline job (first run)
+  command:
+    cmd: >
+      java -jar /tmp/jenkins-cli.jar
+      -s http://localhost:{{ jenkins_http_port }}/
+      -auth {{ jenkins_admin_username }}:{{ jenkins_admin_password }}
+      create-job "{{ pipeline_job_name }}"
+    stdin: "{{ job_config_xml.content | b64decode }}"
+  when: job_exists.rc != 0
+
+- name: Update pipeline job (subsequent runs — idempotent)
+  command:
+    cmd: >
+      java -jar /tmp/jenkins-cli.jar
+      -s http://localhost:{{ jenkins_http_port }}/
+      -auth {{ jenkins_admin_username }}:{{ jenkins_admin_password }}
+      update-job "{{ pipeline_job_name }}"
+    stdin: "{{ job_config_xml.content | b64decode }}"
+  when: job_exists.rc == 0
