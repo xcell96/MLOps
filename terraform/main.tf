@@ -91,5 +91,13 @@ resource "libvirt_domain" "vm" {
 }
 
 output "vm_ip" {
-  value = libvirt_domain.vm.network_interface[0].addresses[0]
+  value = try(libvirt_domain.vm.network_interface[0].addresses[0], "not yet assigned")
+}
+
+resource "local_file" "inventory" {
+  content = templatefile("${path.module}/inventory.tpl", {
+    ip = try(libvirt_domain.vm.network_interface[0].addresses[0], "")
+  })
+  filename        = "${path.module}/../ansible/inventory.ini"
+  depends_on      = [libvirt_domain.vm]
 }
