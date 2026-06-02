@@ -1,7 +1,7 @@
 # MLOps
 *Applying DevOps principles to deploying Large Language Models.*
 
-This project creates a Linux VM on your hypervisor and straps it with Jenkins, ready to run your first pipeline for deploying your model.
+This project creates a Linux VM on your hypervisor and straps it with Jenkins, ready to run your first pipeline for deploying your *very own* personal, local, offline model.
 
 ## Requirements
 - Linux (6GB RAM, 8 cores min.)
@@ -15,6 +15,7 @@ This project creates a Linux VM on your hypervisor and straps it with Jenkins, r
 (Optional) Modify the parameters of the VM, compose.yaml, Jenkinsfile or Ansible playbook to your liking.
 
 ```shell
+$ sudo bash ./prepare_hypervisor.sh
 $ git clone https://github.com/xcell96/MLOps && cd MLOps
 $ cd terraform && sudo terraform apply
 $ cd ../ansible
