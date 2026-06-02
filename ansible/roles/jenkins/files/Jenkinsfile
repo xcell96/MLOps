@@ -20,9 +20,16 @@ pipeline {
             }
         }
 
-        stage('Wait for proper start') {
+        stage('Wait for Open WebUI') {
             steps {
-                sleep 10
+                timeout(time: 10, unit: 'MINUTES') {
+                    sh '''
+                        until curl -fsS http://localhost:3000 > /dev/null; do
+                            echo "Waiting for Open WebUI..."
+                            sleep 5
+                        done
+                    '''
+                }
             }
         }
 
