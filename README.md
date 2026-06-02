@@ -15,8 +15,8 @@ This project creates a Linux VM on your hypervisor and straps it with Jenkins, r
 (Optional) Modify the parameters of the VM, compose.yaml, Jenkinsfile or Ansible playbook to your liking.
 
 ```shell
-$ sudo bash ./prepare_hypervisor.sh
 $ git clone https://github.com/xcell96/MLOps && cd MLOps
+$ sudo bash ./prepare_hypervisor.sh
 $ cd terraform && sudo terraform apply
 $ cd ../ansible
 $ ansible-playbook -i inventory.ini playbook.yml
