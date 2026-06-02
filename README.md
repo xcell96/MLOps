@@ -4,7 +4,7 @@
 This project creates a Linux VM on your hypervisor and straps it with Jenkins, ready to run your first pipeline for deploying your *very own* personal, local, offline model.
 
 ## Requirements
-- Linux (6GB RAM, 8 cores min.)
+- Linux (4GB RAM, 4 cores for VM)
 - An internet connection for strapping VM
 - Superuser privileges
 - KVM, QEMU and libvirt
