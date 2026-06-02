@@ -1,7 +1,7 @@
 # MLOps
 *Applying DevOps principles to deploying Large Language Models.*
 
-This project creates a Linux VM on your hypervisor and straps it with Jenkins, ready to run your first pipeline for deploying your *very own* personal, local, offline model.
+This project creates a Linux VM on your hypervisor and straps it with Jenkins, ready to run your first pipeline for deploying your *very own* personal, local, offline LLM.
 
 ## Requirements
 - Linux (4GB RAM, 4 cores for VM)
